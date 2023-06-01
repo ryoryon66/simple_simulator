@@ -8,6 +8,7 @@ public class Computer {
     boolean halt;
 
     boolean debug;
+    int instractionCount;
 
     private final Scanner sc;
 
@@ -17,6 +18,7 @@ public class Computer {
         this.currentPC = 0;
         this.sc = new Scanner(System.in);
         this.debug = false;
+        this.instractionCount = 0;
     }
     public Computer(boolean d){
         this.mem = new Memory();
@@ -24,6 +26,7 @@ public class Computer {
         this.currentPC = 0;
         this.sc = new Scanner(System.in);
         this.debug = d;
+        this.instractionCount = 0;
     }
     short getMemory(int index){
         return mem.get(index);
@@ -90,6 +93,7 @@ public class Computer {
                 System.err.println(this);
             }
             currentPC++;
+            this.instractionCount += 1;
         }
     }
 

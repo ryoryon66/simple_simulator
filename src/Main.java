@@ -10,11 +10,13 @@ public class Main {
         FileWriter writer = new FileWriter(mif);
         writer.write("WIDTH = 16;\n");
         writer.write("DEPTH = 4096;\n");
-        writer.write("ADDRESS_RADIX = DEC;\n");
-        writer.write("DATA_RADIX = DEC;\n");
+        writer.write("ADDRESS_RADIX = HEX;\n");
+        writer.write("DATA_RADIX = HEX;\n");
         writer.write("CONTENT BEGIN\n");
         for(int n=0; n<4096; n++){
-            writer.write(n + " : " + com.getMemory(n) + ";\n"); 
+            // nの16進数表現
+            String hexn = Integer.toHexString(n).toLowerCase();
+            writer.write(hexn + " : " + com.getMemory(n) + ";\n"); 
         }
         writer.write("END\n");
         writer.close();
@@ -22,7 +24,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         boolean debug = false;
         boolean mifOutput = false;
-        String inputFileName = "sample.txt";
+        String inputFileName  = null;
         
 
         for(String s: args){
@@ -30,6 +32,7 @@ public class Main {
             else if(s.equals("-m")) mifOutput = true;
             else if(new File(s).isFile()) inputFileName = s;
         }
+        // System.out.print(inputFileName);
         if(!new File(inputFileName).isFile()) {
             System.out.printf("File \"%s\" does not exit.", inputFileName);
             return;
@@ -59,5 +62,7 @@ public class Main {
         if(mifOutput) makeMIF(com);
 
         com.execute();
+
+        System.out.println("実行命令数 : " + com.instractionCount);
     }
 }

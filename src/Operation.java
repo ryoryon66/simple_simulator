@@ -31,6 +31,7 @@ public interface Operation {
                 short d = cut(binary, 0,8);
                 switch (cut(binary, 11, 3)){
                     case 0: return new LoadImmediate(rb, d);
+                    case 1: return new AddImmediate(rb, d);
                     case 4: return new Branch(d);
                     case 7:{
                         int cond = rb;
@@ -189,8 +190,13 @@ public interface Operation {
             if(!(0 <= rb && rb <= 7)) throw new IllegalArgumentException("invalid register number in LI: "+rb);
             if(!(-128 <= d && d <= 127)) throw new IllegalArgumentException("invalid immediate value in LI: "+d);
             op = new LoadImmediate(rb, d);
-        }
-        else if(validTokens[0].equalsIgnoreCase("B")){
+        } else if (validTokens[0].equalsIgnoreCase("ADDI")){
+            int rb = Integer.valueOf(validTokens[1]);
+            short d = Short.valueOf(validTokens[2]);
+            if(!(0 <= rb && rb <= 7)) throw new IllegalArgumentException("invalid register number in ADDI: "+rb);
+            if(!(-128 <= d && d <= 127)) throw new IllegalArgumentException("invalid immediate value in ADDI: "+d);
+            op = new AddImmediate(rb, d);
+        } else if(validTokens[0].equalsIgnoreCase("B")){
             short d = Short.valueOf(validTokens[1]);
             if(!(-128 <= d && d <= 127)) throw new IllegalArgumentException("invalid immediate value in B: "+d);
             op = new Branch(d);
@@ -570,6 +576,35 @@ class LoadImmediate implements Operation{
         return "LI "+rb+","+d;
     }
 }
+
+class AddImmediate implements Operation{
+    int rb;
+    short d;
+
+    public AddImmediate(int rb, short d){
+        this.rb = rb;
+        this.d = Operation.extend(d,8);
+    }
+
+    public void execute(Computer com){
+        int result = com.getRegister(rb) + d;
+        boolean s = ((short)result)<0;
+        boolean z = ((short)result)==0;
+        boolean c = Operation.cut((short)result, 16, 1)>0;
+        boolean v = result > Short.MAX_VALUE || result < Short.MIN_VALUE;
+        com.setConditionCodes(s,z,c,v);
+        com.setRegister(rb, (short)result);
+    }
+
+    public short toBinary(){
+        return (short) ((0b10 << 14) + (0b001 << 11) + (rb << 8) + (Operation.cut(d,0,8) << 0));
+    }
+
+    public String toString(){
+        return "ADDI "+rb+","+d;
+    }
+}
+
 class Branch implements Operation{
     short d;
     public Branch(short d){
